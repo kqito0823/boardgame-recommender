@@ -39,7 +39,7 @@ async def generate_single_shot_content(request: GenerateRequest):
             prompt = request.prompt
             for chunk in generate_content(prompt):
                 # フロントエンドに送信
-                yield chunk
+                yield f"data: {chunk}\n\n"
 
         # エラーハンドリング
         except HTTPException as e:

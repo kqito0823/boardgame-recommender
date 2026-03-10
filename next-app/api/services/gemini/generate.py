@@ -4,6 +4,7 @@ Gemini API で生成を実行するモジュール
 
 from ...config import gemini_client
 
+
 def generate_content(prompt: str):
     """Geminiでテキスト生成を実行する関数
 
