@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from ..modules.generate import generate_content
+from .generate import generate_content
 
 # ルーター
 router = APIRouter(prefix="/api/py/chat", tags=["LLM"])

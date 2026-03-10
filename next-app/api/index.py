@@ -7,7 +7,7 @@ Next.js内に組み込むサーバーレスFastAPIのエントリーポイント
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import chat_api
+from .services.gemini import chat_api
 
 # ---------- アプリケーションのセットアップ ----------
 
