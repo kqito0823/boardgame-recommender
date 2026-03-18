@@ -1,76 +1,84 @@
-'use client';
+"use client";
 
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
-import { useState } from 'react';
-
+import { useState } from "react";
 import Markdown from "react-markdown";
 import "@/styles/markdown_style.css";
 
-export default function Chat() {
-    const [input, setInput] = useState('');
+export default function SimpleStreamTest() {
+    const [content, setContent] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
 
-    const { messages, sendMessage, status } = useChat({
-        transport: new DefaultChatTransport({
-            api: '/api/chat',
-        }),
-    });
+    const handleGenerate = async () => {
+        // 1. 状態の初期化とハードコードしたプロンプトの準備
+        setContent("");
+        setIsGenerating(true);
+        const prompt = "こんにちは！ボドゲについて300文字程度で熱く語ってください。";
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!input.trim()) return;
+        try {
+            // 2. FastAPIサーバーへPOSTリクエスト
+            const response = await fetch("http://localhost:3000/api/py/chat/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "text/event-stream",
+                },
+                body: JSON.stringify({ prompt }),
+            });
 
-        sendMessage({ text: input });
-        setInput('');
+            if (!response.body) throw new Error("レスポンスボディがありません");
+
+            // 3. ストリームを読み取るための準備
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            // 4. データが来るたびにループ処理で読み込む
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break; // ストリーム終了
+
+                // バイトデータを文字列に変換
+                const chunkString = decoder.decode(value, { stream: true });
+
+                // SSEのフォーマット ("data: {chunk}\n\n") をパースする
+                const lines = chunkString.split("\n");
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        // "data: " の部分 (6文字) を取り除いて抽出
+                        const text = line.slice(6);
+
+                        // 抽出したテキストを既存のcontentの末尾に追加
+                        setContent((prev) => prev + text);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("通信エラー:", error);
+            setContent("エラーが発生しました。コンソールを確認してください。");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
-    const isLoading = status === 'streaming' || status === 'submitted';
-
     return (
-        <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-                <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="メッセージを入力..."
-                    className="flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={isLoading}
-                />
-                <button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                >
-                    {status === 'streaming' 
-                        ? 'AI応答中...' 
-                        : status === 'submitted' 
-                        ? '送信中...' 
-                        : '送信'}
-                </button>
-            </form>
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={`p-4 rounded-lg ${
-                            message.role === 'user'
-                                ? 'bg-blue-100 ml-auto max-w-[80%]'
-                                : 'bg-gray-100 mr-auto max-w-[80%]'
-                        }`}
-                    >
-                        <p className="text-sm font-semibold mb-1">
-                            {message.role === 'user' ? 'You' : 'AI'}
-                        </p>
-                        <div className="whitespace-pre-wrap">
-                            {message.parts?.map((part, index) => {
-                                if (part.type === 'text') {
-                                    return <div key={index} className='markdown'><Markdown>{part.text}</Markdown></div>;
-                                }
-                                return null;
-                            })}
+        <div className="max-w-2xl p-8 mx-auto">
+            <h1 className="mb-6 text-2xl font-bold">SSE シンプルテスト</h1>
+
+            <button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-6 py-3 mb-6 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                {isGenerating ? "生成中..." : "テスト実行"}
+            </button>
+
+            <div className="p-6 bg-white border rounded-lg shadow-sm min-h-50">
+                {/* 受け取った文字列をそのまま表示。改行を反映させるために whitespace-pre-wrap を指定 */}
+                <div className="text-gray-800 whitespace-pre-wrap">
+                    {content || (
+                        <div className="markdown">
+                            <Markdown>{content}</Markdown>
                         </div>
-                    </div>
-                ))}
+                    )}
+                </div>
             </div>
         </div>
     );
