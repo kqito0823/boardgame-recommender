@@ -27,7 +27,7 @@ export default function DBPage() {
                 ボタン
             </button>
             {/* 結果表示 */}
-            {result && <div className="border">{result[0].name}</div>}
+            /* {result && <div className="border">{result[0].name}</div>} */
         </div>
     );
 }
