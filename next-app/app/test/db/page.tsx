@@ -26,8 +26,6 @@ export default function DBPage() {
             <button onClick={handleSubmit} className="border">
                 ボタン
             </button>
-            {/* 結果表示 */}
-            /* {result && <div className="border">{result[0].name}</div>} */
         </div>
     );
 }
