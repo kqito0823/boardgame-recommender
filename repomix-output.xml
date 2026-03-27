@@ -1,0 +1,1322 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+next-app/
+  app/
+    api/
+      chat/
+        recommend_game/
+          route.ts
+      db/
+        get_game_table/
+          route.ts
+        get_genre_table/
+          route.ts
+    board-games/
+      ClientPage.tsx
+      page.tsx
+    ClientPage.tsx
+    favicon.ico
+    globals.css
+    layout.tsx
+    page.tsx
+  components/
+    layout/
+      Header.tsx
+    ui/
+      modal.tsx
+  lib/
+    google.ts
+    prisma.ts
+  prisma/
+    schema.prisma
+  styles/
+    markdown_style.css
+  types/
+    game.ts
+    input.ts
+    output.ts
+  .env
+  .env.local.example
+  .gitignore
+  eslint.config.mjs
+  next.config.ts
+  package.json
+  postcss.config.mjs
+  prisma.config.ts
+  tailwind.config.js
+  tsconfig.json
+README.md
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="next-app/components/ui/modal.tsx">
+"use client";
+
+import { useState } from "react";
+import { Star, X, User } from "lucide-react";
+import { Game } from "@/types/game";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+type Inputs = {
+    id?: number;
+    name?: string;
+    players?: string;
+    description?: string;
+    isFavorite: boolean;
+};
+
+interface Props {
+    mode: string;
+    initialData: Game;
+    onClose: () => void;
+}
+
+// ゲーム詳細・追加モーダル コンポーネント
+export default function GameModal({ mode, initialData, onClose }: Props) {
+    // フォーム情報管理
+    const { register, handleSubmit } = useForm<Inputs>({
+        defaultValues: {
+            id: initialData?.game_id,
+            name: initialData?.name,
+            players: initialData?.num_of_player,
+            description: initialData?.description,
+            isFavorite: initialData?.is_favorite,
+        },
+    });
+
+    // 送信処理
+    const onSubmit: SubmitHandler<Inputs> = async (inputData) => {
+        console.log(inputData);
+
+        // CRUDなど
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 duration-200 bg-gray-900/40 animate-in fade-in">
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div className="relative w-full max-w-lg p-6 duration-200 bg-white shadow-2xl rounded-3xl md:p-8 animate-in zoom-in-95">
+                    {/* 閉じるボタン（右上に配置） */}
+                    <button
+                        onClick={onClose}
+                        className="absolute p-2 text-gray-400 transition-colors rounded-full top-6 right-6 hover:text-gray-600 hover:bg-gray-100">
+                        <X size={20} />
+                    </button>
+
+                    <div className="pr-12 mb-8">
+                        {mode === "create" ? (
+                            <input
+                                type="text"
+                                {...register("name")}
+                                placeholder="ゲーム名を入力"
+                                className="w-full pb-2 text-2xl font-bold text-gray-800 placeholder-gray-300 transition-colors border-b border-gray-200 focus:outline-none focus:border-emerald-500"
+                            />
+                        ) : (
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-bold text-gray-800">
+                                    {initialData.name}
+                                </h2>
+                                <Star
+                                    className={
+                                        initialData.is_favorite
+                                            ? "fill-yellow-400 text-yellow-400 w-6 h-6"
+                                            : "text-gray-200 w-6 h-6"
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex flex-wrap items-center mt-4 text-sm text-gray-500 gap-x-6 gap-y-2">
+                            <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg">
+                                <User size={14} />
+                                <input
+                                    type="text"
+                                    {...register("players")}
+                                    placeholder="2〜4人"
+                                    className="w-16 text-gray-700 placeholder-gray-400 bg-transparent focus:outline-none"
+                                />
+                            </div>
+                            {mode === "edit" && (
+                                <>
+                                    <span>
+                                        プレイ:{" "}
+                                        <strong className="text-gray-700">
+                                            {initialData?.num_of_played}回
+                                        </strong>
+                                    </span>
+                                    <span>最終: {initialData?.day_of_last_play}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="mb-8">
+                        <div className="flex items-center justify-between mb-3">
+                            <label className="font-medium text-gray-700">説明・メモ</label>
+                            <button
+                                // onClick={handleGenerateDesc}
+                                // disabled={isGeneratingDesc}
+                                className="text-emerald-600 hover:bg-emerald-50 font-medium px-3 py-1.5 rounded-lg text-xs transition-colors disabled:opacity-50">
+                                {/* {isGeneratingDesc ? "AI生成中..." : "✨ AIで生成"} */}
+                            </button>
+                        </div>
+                        <textarea
+                            {...register("description")}
+                            placeholder="自由にメモを残せます..."
+                            rows={4}
+                            className="w-full p-4 text-sm text-gray-700 transition-all border border-gray-200 resize-none rounded-xl bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500"></textarea>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-2">
+                        {mode === "edit" && (
+                            <button
+                                // onClick={() => onDelete(formData.id)}
+                                className="px-5 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 transition-colors mr-auto">
+                                削除
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="px-5 py-2.5 rounded-xl font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                            キャンセル
+                        </button>
+                        <button
+                            type="submit"
+                            className="bg-emerald-500 text-white font-medium px-6 py-2.5 rounded-xl shadow-sm hover:bg-emerald-600 hover:shadow transition-all">
+                            {mode === "create" ? "保存する" : "更新する"}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
+}
+</file>
+
+<file path="next-app/app/api/chat/recommend_game/route.ts">
+// next-app/app/api/chat/recommend_game/route.ts
+
+import gemini from "@/lib/google";
+import { RecommendInputs } from "@/types/input"; // インプット情報の型
+
+export async function POST(req: Request) {
+    // リクエスト情報受け取り
+    const inputData: RecommendInputs = await req.json();
+
+    // ============================================================
+    // 出力スキーマ定義
+    // ============================================================
+
+    const boardgameSchema = {
+        type: "object",
+        properties: {
+            recommend: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        game_id: {
+                            type: "string",
+                            description: "推薦したボードゲームのID",
+                        },
+                        reason: {
+                            type: "string",
+                            description: "推薦理由",
+                        },
+                    },
+                    required: ["game_id", "reason"],
+                },
+            },
+        },
+        required: ["recommend"],
+    };
+
+    // ============================================================
+    // インプット情報加工
+    // ============================================================
+
+    // ボードゲーム情報を整形された文字列に変換
+    const gameData = inputData.gameData
+        .map(
+            (game) => `
+### ${game.name}
+- id: ${game.game_id}
+- プレイ人数: ${game.num_of_player}
+- 説明: ${game.description}
+- お気に入り${game.is_favorite}
+- プレイ回数: ${game.num_of_played}
+- ジャンル: ${game.genre.name}
+- 最後に遊んだ日: ${game.day_of_last_play}
+`,
+        )
+        .join("");
+
+    // プロンプト構築
+    const recommendPrompt: string = `
+以下の情報に基づき、おすすめのボードゲームを提案してください。
+提案するボードゲームは必ず後述する保有ボードゲーム情報の中からとってきてください。
+該当するボードゲームがない場合は、id欄にnullを返してください。
+
+# ユーザー入力
+
+- 提案する方向性: ${inputData.tab}
+- プレイ人数: ${inputData.people}
+- 希望するジャンル: ${inputData.genre}
+- その他要望:
+    ${inputData.request || "なし"}
+
+## 保有ボードゲーム情報
+${gameData}
+`;
+
+    // ============================================================
+    // 生成処理
+    // ============================================================
+    const response = await gemini.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: recommendPrompt,
+        config: {
+            responseMimeType: "application/json",
+            responseJsonSchema: boardgameSchema,
+            thinkingConfig: {
+                includeThoughts: false,
+                thinkingBudget: 0,
+            },
+        },
+    });
+    const answer = response.text;
+    console.log("回答:\n", answer);
+
+    return Response.json({ answer });
+}
+</file>
+
+<file path="next-app/app/api/db/get_game_table/route.ts">
+// next-app/app/api/db/route.ts
+
+import prisma from "@/lib/prisma";
+
+export async function GET() {
+    try {
+        const games = await prisma.games.findMany({
+            select: {
+                game_id: true,
+                name: true,
+                num_of_player: true,
+                description: true,
+                is_favorite: true,
+                num_of_played: true,
+                day_of_last_play: true,
+                genre: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
+        return new Response(JSON.stringify(games), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("DB ERROR:", error);
+
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+</file>
+
+<file path="next-app/app/globals.css">
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+</file>
+
+<file path="next-app/lib/google.ts">
+import { GoogleGenAI } from "@google/genai";
+
+// プロバイダーインスタンス
+const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+export default gemini;
+</file>
+
+<file path="next-app/lib/prisma.ts">
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL!,
+});
+
+const prisma = new PrismaClient({ adapter });
+
+export default prisma
+</file>
+
+<file path="next-app/styles/markdown_style.css">
+/*
+    ============================================================
+    Markdownのスタイルを適用するCSS (LLM出力テキスト, メモ機能など)
+    ============================================================
+*/
+
+/* 見出し */
+.markdown h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 1.75rem 0 1rem;
+}
+.markdown h2 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 1.75rem 0 0.5rem;
+}
+.markdown h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 1.75rem 0 0.5rem;
+}
+.markdown h4 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 1.75rem 0 0.5rem;
+}
+.markdown h5 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 1.75rem 0 0.5rem;
+}
+.markdown h6 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 1.75rem 0 0.5rem;
+}
+/* 基本書式 */
+.markdown p {
+    margin-bottom: 1rem;
+}
+.markdown hr {
+    border-top: 1px solid #c4c7c5;
+    margin: 0.5rem 0;
+}
+/* リスト */
+.markdown ul {
+    padding-left: 1.6875rem;
+    margin: 0.5rem 0 1rem;
+}
+.markdown ol {
+    padding-left: 1.6875rem;
+    margin: 0.5rem 0 1rem;
+}
+.markdown li {
+    padding-left: 0.25rem;
+    margin-bottom: 0.5rem;
+    list-style: inside;
+    list-style-position: outside;
+}
+.markdown ul li p {
+    padding-left: 0.025rem;
+    margin: 0.5rem 0;
+}
+/* コードブロック */
+.markdown pre,
+.markdown code {
+    background: #f0f4f9;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-family: "Fira Mono", "Menlo", "Consolas", monospace;
+    font-size: 0.95em;
+}
+.markdown pre {
+    overflow-x: auto;
+}
+.markdown code {
+    padding: 0.2em 0.4em;
+}
+/* テーブル */
+.markdown table {
+    border-collapse: collapse;
+}
+.markdown th {
+    padding: 0.5rem;
+    font-weight: 700;
+    border: 1px solid #d6e3ed;
+    background-color: #edf2f7;
+}
+.markdown td {
+    padding: 0.5rem;
+    border: 1px solid #d6e3ed;
+    background-color: #fff;
+}
+
+.citation {
+    font-size: 0.75em;
+    color: #6b7280; /* gray-500 */
+    opacity: 0.65;
+    margin-left: 0.25em;
+    white-space: nowrap;
+    cursor: default;
+}
+
+.citation:hover {
+    opacity: 1;
+    color: #2563eb; /* blue-600 */
+}
+</file>
+
+<file path="next-app/types/game.ts">
+// types/game.ts
+export type Game = {
+    game_id: number; // ゲームid
+    name: string; // ゲーム名
+    num_of_player: string; // プレイ人数
+    description: string; // 説明
+    is_favorite: boolean; // お気に入り
+    num_of_played: number; // プレイ回数
+    day_of_last_play: string; // 最終プレイ日
+    genre_id: number; // ジャンルid
+    genre: Genre; // ジャンル
+};
+
+export type Genre = {
+    id: number; // ジャンルid
+    name: string; // ジャンル名
+};
+</file>
+
+<file path="next-app/types/input.ts">
+import { Game } from "./game";
+
+// レコメンドボードゲーム生成のインプット型
+export type RecommendInputs = {
+    tab: string;
+    people: string; // プレイ人数
+    genre: string; // ジャンル
+    request: string; // その他要望
+    gameData: Game[]; // ゲームデータ（送信用）
+};
+</file>
+
+<file path="next-app/types/output.ts">
+// next-app/types/output.ts
+
+export type OutputBoardgame = {
+    id: string;
+    name: string;
+    description: string;
+    num_of_player: string;
+    reason: string;
+};
+</file>
+
+<file path="next-app/eslint.config.mjs">
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+</file>
+
+<file path="next-app/postcss.config.mjs">
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+</file>
+
+<file path="next-app/tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="next-app/app/api/db/get_genre_table/route.ts">
+// next-app/app/api/db/route.ts
+
+import prisma from "@/lib/prisma";
+
+export async function GET() {
+    try {
+        const genres = await prisma.genre.findMany();
+        return new Response(JSON.stringify(genres), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("DB ERROR:", error);
+
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+</file>
+
+<file path="next-app/app/board-games/ClientPage.tsx">
+"use client";
+
+import { useState } from "react";
+import { Star, X, Search, User, Plus } from "lucide-react";
+
+import { Game } from "@/types/game";
+import GameModal from "@/components/ui/modal";
+
+interface Props {
+    data: Game[];
+}
+
+export default function BoardGamesClientPage({ data }: Props) {
+    const [searchQuery, setSearchQuery] = useState(""); // 検索クエリ
+    const [games, setGames] = useState(data); // ゲーム
+    // モーダルの状態
+    const [modalState, setModalState] = useState({ isOpen: false, mode: "create", game: null });
+
+    // 検索条件適用 (フィルターされたGamesを返す)
+    const filteredGames = games.filter(
+        (g) => g.name.includes(searchQuery) || g.description.includes(searchQuery),
+    );
+
+    // モーダル
+    const openEditModal = (game: Game) => {
+        setModalState({ isOpen: true, mode: "edit", game });
+    };
+
+    const openCreateModal = () => {
+        setModalState({ isOpen: true, mode: "create", game: "" });
+    };
+
+    return (
+        <div className="w-full max-w-5xl p-4 mx-auto space-y-6 sm:p-6">
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                <h2 className="text-2xl font-bold text-gray-800">保有ゲーム一覧</h2>
+                <button
+                    onClick={openCreateModal}
+                    className="bg-lime-500 text-white font-medium px-5 py-2.5 rounded-full shadow-sm shadow-lime-500/20 hover:bg-lime-600 hover:shadow transition-all flex items-center gap-2 text-sm w-full sm:w-auto justify-center">
+                    <Plus size={18} /> 新規登録
+                </button>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                    <Search
+                        size={18}
+                        className="absolute text-gray-400 -translate-y-1/2 left-4 top-1/2"
+                    />
+                    <input
+                        type="text"
+                        placeholder="ゲーム名や説明で検索..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full border border-gray-300 rounded-full py-2.5 pl-11 pr-4 bg-white focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-shadow text-sm"
+                    />
+                </div>
+                <select className="border border-gray-300 rounded-full px-5 py-2.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 text-sm">
+                    <option>並べ替え</option>
+                    <option>最後に遊んだ日</option>
+                    <option>遊んだ回数</option>
+                    <option>お気に入り</option>
+                </select>
+            </div>
+
+            {/* ゲームリスト */}
+            <div className="space-y-3">
+                {filteredGames.length === 0 ? (
+                    <div className="py-16 text-center text-gray-400 bg-white border border-gray-100 shadow-sm rounded-2xl">
+                        <p>見つかりませんでした。</p>
+                    </div>
+                ) : (
+                    filteredGames.map((game: Game) => (
+                        <div
+                            key={game.game_id}
+                            onClick={() => openEditModal(game)}
+                            className="flex items-center justify-between p-4 transition-all bg-white border border-gray-100 cursor-pointer rounded-2xl sm:p-5 hover:shadow-md hover:border-lime-200 group">
+                            <div className="flex items-center flex-1 min-w-0 gap-4 sm:gap-5">
+                                <button
+                                    //   onClick={(e) => handlePlayed(game.id, e)}
+                                    className="flex items-center justify-center w-12 h-12 font-bold transition-all rounded-full sm:w-14 sm:h-14 bg-lime-50 text-lime-600 shrink-0 hover:bg-lime-100 active:scale-95"
+                                    title="遊んだ！を記録">
+                                    <span className="text-[10px] sm:text-xs">遊んだ!</span>
+                                </button>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="mb-1 text-lg font-bold text-gray-800 truncate">
+                                        {game.name}
+                                    </h3>
+                                    <p className="text-xs text-gray-500 truncate sm:text-sm">
+                                        {game.description || "説明なし"}
+                                    </p>
+                                    <div className="flex items-center gap-3 mt-2 text-xs font-medium text-gray-400 sm:gap-4">
+                                        <span className="bg-gray-50 px-2 py-0.5 rounded-md">
+                                            遊んだ回数: {game.num_of_played}回
+                                        </span>
+                                        <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-md">
+                                            <User size={12} /> {game.num_of_player}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-3 ml-4 shrink-0">
+                                <div className="flex items-center gap-1 transition-opacity opacity-100 sm:gap-2 sm:opacity-0 sm:group-hover:opacity-100">
+                                    <button
+                                        // onClick={(e) => toggleFavorite(game.id, e)}
+                                        className="p-2 transition-colors rounded-full hover:bg-gray-50">
+                                        <Star
+                                            size={20}
+                                            className={
+                                                game.is_favorite
+                                                    ? "fill-yellow-400 text-yellow-400"
+                                                    : "text-gray-300"
+                                            }
+                                        />
+                                    </button>
+                                    <button
+                                        // onClick={(e) => handleDelete(game.id, e)}
+                                        className="p-2 text-gray-400 transition-colors rounded-full hover:text-red-500 hover:bg-red-50">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                                <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                                    最終プレイ: {game.day_of_last_play}
+                                </span>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+            {modalState.isOpen && (
+                <GameModal
+                    mode={modalState.mode}
+                    initialData={modalState.game}
+                    onClose={() => setModalState({ isOpen: false, mode: "create", game: null })}
+                    // onSave={saveGame}
+                    // onDelete={(id) => handleDelete(id, null)}
+                />
+            )}
+        </div>
+    );
+}
+</file>
+
+<file path="next-app/app/ClientPage.tsx">
+"use client";
+
+import { Game, Genre } from "@/types/game";
+import { RecommendInputs } from "@/types/input";
+import { OutputBoardgame } from "@/types/output";
+import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+
+// ジャンルの型
+interface Props {
+    gameData: Game[];
+    genreData: Genre[];
+}
+
+export default function ClientHome({ genreData, gameData }: Props) {
+    // register: フィールド登録, handleSubmit: 送信処理, watch: リアルタイム監視
+    const { register, handleSubmit } = useForm<RecommendInputs>();
+    const [isGenerating, setIsGenerating] = useState(false); // 生成中のローディング
+    const [outputText, setOutputText] = useState<OutputBoardgame[]>([]); // 生成テキスト
+
+    // ジャンル一覧
+    const genres = genreData;
+
+    // 送信処理
+    const onSubmit: SubmitHandler<RecommendInputs> = async (inputData) => {
+        // 値を初期化
+        setIsGenerating(true);
+        // inputDataにgameDB情報を追加
+        inputData.gameData = gameData;
+        try {
+            const response = await fetch("/api/chat/recommend_game", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(inputData),
+            });
+            const data = await response.json();
+            const answer = JSON.parse(data.answer);
+            // game_idをもとにgameDataにあるデータを追加する。
+            for (const recommend of answer.recommend) {
+                // game_idが存在するかチェック
+                if (recommend.game_id != null) {
+                    const id = Number.parseInt(recommend.game_id, 10);
+
+                    // gameDataから一致するゲームを探す
+                    const game = gameData.find((g) => g.game_id === id);
+
+                    // 見つかった場合のみ代入
+                    if (game) {
+                        recommend.name = game.name;
+                        recommend.description = game.description;
+                        recommend.num_of_player = game.num_of_player;
+                    }
+                }
+            }
+            setOutputText(answer.recommend);
+        } catch (error) {
+            console.log("エラーが発生しました", error);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    return (
+        <div className="flex flex-col items-center justify-center w-full max-w-6xl px-4 py-10 mx-auto sm:px-20">
+            <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-3xl">
+                {/* タブ切り替え */}
+                <div className="flex items-center justify-between w-full gap-2 pb-4 mt-6 text-lg border-b sm:text-xl border-lime-500/20">
+                    <div className="flex-1">
+                        <input
+                            type="radio"
+                            defaultChecked
+                            {...register("tab")} // name属性に相当
+                            id="today-game"
+                            value="today-game"
+                            className="hidden peer"
+                        />
+                        <label
+                            htmlFor="today-game"
+                            className="flex justify-center w-full p-3 font-medium text-gray-600 transition-all cursor-pointer rounded-xl hover:bg-lime-400 peer-checked:bg-lime-500 peer-checked:text-white peer-checked:shadow-md">
+                            今日遊ぶゲーム
+                        </label>
+                    </div>
+                    <div className="flex-1">
+                        <input
+                            type="radio"
+                            {...register("tab")}
+                            id="new-game"
+                            value="new-game"
+                            className="hidden peer"
+                        />
+                        <label
+                            htmlFor="new-game"
+                            className="flex justify-center w-full p-3 font-medium text-gray-600 transition-all cursor-pointer rounded-xl hover:bg-lime-400 peer-checked:bg-lime-500 peer-checked:text-white peer-checked:shadow-md">
+                            新しく買うゲーム
+                        </label>
+                    </div>
+                </div>
+
+                {/* オプション */}
+                <div className="w-full pt-8">
+                    <details className="flex flex-col w-full mx-auto group" open>
+                        <summary className="mb-5 text-lg font-bold text-gray-700 transition-colors cursor-pointer hover:text-lime-600">
+                            詳細設定
+                        </summary>
+                        <div className="flex flex-col gap-6 p-6 bg-white border border-gray-100 shadow-sm rounded-2xl">
+                            {/* 人数選択 */}
+                            <div className="flex flex-col">
+                                <label htmlFor="people" className="font-medium text-gray-700">
+                                    プレイ人数
+                                </label>
+                                <select
+                                    {...register("people")}
+                                    id="people"
+                                    defaultValue={1}
+                                    className="w-full max-w-xs mt-2 px-4 py-2.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500 transition-shadow">
+                                    <option value="">人数を選択してください</option>
+                                    <option value="1">1人</option>
+                                    <option value="2">2人</option>
+                                    <option value="3-4">3~4人</option>
+                                    <option value="more">5人以上</option>
+                                </select>
+                            </div>
+
+                            {/* ジャンル選択 */}
+                            <div className="text-sm">
+                                <label className="text-[16px] font-medium text-gray-700">
+                                    ジャンル
+                                </label>
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                    {genres.map((genre, k) => (
+                                        <div key={k}>
+                                            <input
+                                                type="radio"
+                                                {...register("genre")}
+                                                id={`${genre.id}`}
+                                                value={genre.name}
+                                                className="hidden peer"
+                                            />
+                                            <label
+                                                htmlFor={`${genre.id}`}
+                                                className="inline-block px-4 py-2 text-gray-600 transition-all border border-gray-200 rounded-full cursor-pointer hover:border-lime-400 hover:bg-lime-500 peer-checked:text-white peer-checked:bg-lime-500 ">
+                                                {genre.name}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* その他要望(自由記載) */}
+                            <div>
+                                <label htmlFor="request" className="font-medium text-gray-700">
+                                    その他の要望（自由記載）
+                                </label>
+                                <textarea
+                                    {...register("request")}
+                                    id="request"
+                                    placeholder="例: 初心者でも楽しめるルールが簡単なもの"
+                                    rows={4}
+                                    className="w-full p-4 mt-2 transition-shadow bg-white border border-gray-300 resize-none rounded-xl focus:outline-none focus:ring-2 focus:ring-lime-500/50 focus:border-lime-500"
+                                />
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+                {/* 生成ボタン */}
+                <div className="flex justify-center pt-10">
+                    <button
+                        type="submit"
+                        disabled={isGenerating}
+                        className={`w-full max-w-sm py-4 text-xl font-bold text-white transition-all shadow-lg rounded-full 
+                        ${isGenerating ? "cursor-not-allowed" : "bg-lime-500 hover:bg-lime-600 text-black hover:shadow-lime-500/30 active:scale-95"}`}>
+                        {isGenerating ? "生成中..." : "生成する！"}
+                    </button>
+                </div>
+            </form>
+
+            {/* 生成結果表示 */}
+            {outputText.length > 0 && !isGenerating && (
+                <div className="w-full max-w-3xl mt-16 duration-500 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="p-6 bg-white border border-gray-100 shadow-xl sm:p-8 rounded-3xl">
+                        <h2 className="flex items-center justify-center gap-2 mb-8 text-2xl font-bold text-center text-gray-800">
+                            <span className="w-8 h-1 rounded-full bg-lime-500"></span>
+                            おすすめのボードゲーム
+                            <span className="w-8 h-1 rounded-full bg-lime-500"></span>
+                        </h2>
+
+                        <div className="space-y-5">
+                            {outputText.map((output, k) => (
+                                <div
+                                    key={k}
+                                    className="flex flex-col w-full p-6 mt-2 transition-all duration-300 border-l-4 shadow-sm bg-gray-50 border-lime-500 rounded-2xl hover:shadow-md hover:bg-white">
+                                    {/* DBにないゲームが提案された場合は name が無いので条件付き表示 */}
+                                    {output.name && (
+                                        <h3 className="mb-3 text-lg font-bold text-gray-800">
+                                            {output.name}
+                                        </h3>
+                                    )}
+                                    <p className="text-base leading-relaxed text-gray-700">
+                                        {output.reason}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+</file>
+
+<file path="next-app/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+// コンポーネント
+import Header from "@/components/layout/Header";
+
+const geistSans = Geist({
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+    title: "Create Next App",
+    description: "Generated by create next app",
+};
+
+export default function RootLayout({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <html lang="ja" suppressHydrationWarning>
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+                suppressHydrationWarning={true}>
+                <Header />
+                <main className="flex flex-col items-center flex-1 min-h-screen bg-gray-50">
+                    {children}
+                </main>
+            </body>
+        </html>
+    );
+}
+</file>
+
+<file path="next-app/prisma/schema.prisma">
+// schema.prisma
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+// ゲームテーブル
+model Games {
+    game_id          Int      @id @default(autoincrement()) // ゲームid
+    name             String // ゲーム名
+    num_of_player    String // プレイ人数
+    description      String // 説明
+    is_favorite      Boolean // お気に入り
+    num_of_played    Int // プレイ回数
+    day_of_last_play DateTime // 最終プレイ日
+    genre_id         Int
+    genre            Genre    @relation(fields: [genre_id], references: [id])
+}
+
+// ジャンルテーブル
+model Genre {
+    id    Int     @id @default(autoincrement()) // ジャンルid
+    name  String // ジャンル名
+    games Games[]
+}
+</file>
+
+<file path="next-app/.env.local.example">
+GEMINI_API_KEY = "your-api-key"
+
+# Recommended for most uses
+DATABASE_URL=
+
+# For uses requiring a connection without pgbouncer
+DATABASE_URL_UNPOOLED=
+
+# Parameters for constructing your own connection string
+PGHOST=
+PGHOST_UNPOOLED=
+PGUSER=
+PGDATABASE=
+PGPASSWORD=
+
+# Parameters for Vercel Postgres Templates
+POSTGRES_URL=
+POSTGRES_URL_NON_POOLING=
+POSTGRES_USER=
+POSTGRES_HOST=
+POSTGRES_PASSWORD=
+POSTGRES_DATABASE=
+POSTGRES_URL_NO_SSL=
+POSTGRES_PRISMA_URL=
+</file>
+
+<file path="next-app/tailwind.config.js">
+module.exports = {
+    content: [
+        "./app/**/*.{js,ts,jsx,tsx,mdx}", // App Routerの場合
+        "./pages/**/*.{js,ts,jsx,tsx,mdx}", // Pages Routerの場合
+        "./components/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/**/*.{js,ts,jsx,tsx,mdx}", // srcフォルダを使用している場合
+    ],
+    theme: {
+        extend: {},
+    },
+    plugins: [],
+};
+</file>
+
+<file path="README.md">
+# boardgame-recommender
+ボードゲームの推薦をAIがしてくれます。
+</file>
+
+<file path="next-app/app/board-games/page.tsx">
+import BoardGamesClientPage from "./ClientPage";
+import { Game } from "@/types/game";
+
+const url = process.env.NEXT_PUBLIC_API_URL!;
+
+export default async function BoardGamesPage() {
+    const response = await fetch(`${url}/api/db/get_game_table`);
+    const data: Game[] = await response.json();
+
+    return <BoardGamesClientPage data={data} />;
+}
+</file>
+
+<file path="next-app/components/layout/Header.tsx">
+"use client";
+import Link from "next/link";
+
+export default function Header() {
+    return (
+        <header className="flex items-center justify-between p-6 border-b shadow-2xs">
+            <h1 className="text-2xl">ボードゲーム レコメンダー</h1>
+            <div className="flex gap-4">
+                <Link href="/" className="p-2 border border-gray-300 rounded-2xl hover:bg-gray-300">
+                    トップページ
+                </Link>
+                <Link
+                    href="/board-games"
+                    className="p-2 border border-gray-300 rounded-2xl hover:bg-gray-300">
+                    保有ボードゲーム管理
+                </Link>
+            </div>
+        </header>
+    );
+}
+</file>
+
+<file path="next-app/next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+    /* ここに設定オプションを記述 */
+    reactStrictMode: true,
+};
+
+export default nextConfig;
+</file>
+
+<file path="next-app/prisma.config.ts">
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+export default defineConfig({
+    schema: "./prisma/schema.prisma",
+    datasource: {
+        url: env("DATABASE_URL"),
+    },
+});
+</file>
+
+<file path="next-app/app/page.tsx">
+import { Genre, Game } from "@/types/game";
+import ClientHome from "./ClientPage";
+
+const url = process.env.NEXT_PUBLIC_API_URL!;
+
+export default async function BoardGamesPage() {
+    // データベースから取得
+    const gameResponse = await fetch(`${url}/api/db/get_game_table`);
+    const genreResponse = await fetch(`${url}/api/db/get_genre_table`);
+    // レスポンスから値取得
+    const gameData: Game[] = await gameResponse.json();
+    const genreData: Genre[] = await genreResponse.json();
+
+    if (!(genreData && gameData)) return;
+
+    return <ClientHome genreData={genreData} gameData={gameData} />;
+}
+</file>
+
+<file path="next-app/.gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+</file>
+
+<file path="next-app/package.json">
+{
+    "name": "next-app",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "postinstall": "prisma generate",
+        "next-dev": "next dev",
+        "dev": "npm run next-dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint"
+    },
+    "dependencies": {
+        "@ai-sdk/google": "^3.0.43",
+        "@ai-sdk/react": "^3.0.118",
+        "@google/genai": "^1.46.0",
+        "@prisma/adapter-pg": "^7.5.0",
+        "@prisma/client": "^7.5.0",
+        "ai": "^6.0.116",
+        "lucide-react": "^1.7.0",
+        "next": "16.1.6",
+        "pg": "^8.20.0",
+        "react": "19.2.3",
+        "react-dom": "19.2.3",
+        "react-hook-form": "^7.71.2",
+        "react-icons": "^5.6.0",
+        "react-markdown": "^10.1.0",
+        "zod-to-json-schema": "^3.25.1"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "concurrently": "^9.2.1",
+        "dotenv": "^17.3.1",
+        "eslint": "^9",
+        "eslint-config-next": "16.1.6",
+        "prisma": "^7.5.0",
+        "tailwindcss": "^4",
+        "typescript": "^5"
+    }
+}
+</file>
+
+</files>

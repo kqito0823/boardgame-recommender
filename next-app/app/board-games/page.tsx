@@ -1,13 +1,11 @@
 import BoardGamesClientPage from "./ClientPage";
+import { Game } from "@/types/game";
+
 const url = process.env.NEXT_PUBLIC_API_URL!;
+
 export default async function BoardGamesPage() {
-  const games = await fetch(`${url}/api/db`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  const data = await games.json();
+    const response = await fetch(`${url}/api/db/get_game_table`);
+    const data: Game[] = await response.json();
 
-  if (!data) return;
-
-  return <BoardGamesClientPage data={data} />;
+    return <BoardGamesClientPage data={data} />;
 }
