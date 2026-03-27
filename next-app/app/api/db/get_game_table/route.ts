@@ -8,7 +8,11 @@ export async function GET() {
             select: {
                 game_id: true,
                 name: true,
+                num_of_player: true,
                 description: true,
+                is_favorite: true,
+                num_of_played: true,
+                day_of_last_play: true,
                 genre: {
                     select: {
                         name: true
@@ -23,12 +27,9 @@ export async function GET() {
     } catch (error) {
         console.error("DB ERROR:", error);
 
-        return new Response(
-            JSON.stringify({ error: "Internal Server Error" }),
-            {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 }

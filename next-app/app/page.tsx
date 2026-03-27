@@ -1,13 +1,17 @@
+import { Genre, Game } from "@/types/game";
 import ClientHome from "./ClientPage";
+
 const url = process.env.NEXT_PUBLIC_API_URL!;
+
 export default async function BoardGamesPage() {
-  const genre = await fetch(`${url}/api/db/get_genre_table`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  const data = await genre.json();
+    // データベースから取得
+    const gameResponse = await fetch(`${url}/api/db/get_game_table`);
+    const genreResponse = await fetch(`${url}/api/db/get_genre_table`);
+    // レスポンスから値取得
+    const gameData: Game[] = await gameResponse.json();
+    const genreData: Genre[] = await genreResponse.json();
 
-  if (!data) return;
+    if (!(genreData && gameData)) return;
 
-  return <ClientHome genre_data={data} />;
+    return <ClientHome genreData={genreData} gameData={gameData} />;
 }
