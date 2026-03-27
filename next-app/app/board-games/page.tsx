@@ -1,10 +1,13 @@
-"use client";
+import BoardGamesClientPage from "./ClientPage";
+const url = process.env.NEXT_PUBLIC_API_URL!;
+export default async function BoardGamesPage() {
+  const games = await fetch(`${url}/api/db`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await games.json();
 
-export default function BoardGamesPage() {
+  if (!data) return;
 
-    return (
-        <div className="flex flex-col items-center justify-center max-w-6xl px-20">
-hello
-        </div>
-    );
+  return <BoardGamesClientPage data={data} />;
 }

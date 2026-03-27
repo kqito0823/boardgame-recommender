@@ -8,7 +8,7 @@ export default function DBPage() {
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch("/api/db", {
+            const response = await fetch("/api/db/recommend_my_game", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -26,8 +26,6 @@ export default function DBPage() {
             <button onClick={handleSubmit} className="border">
                 ボタン
             </button>
-            {/* 結果表示 */}
-            {result && <div className="border">{result[0].name}</div>}
         </div>
     );
 }
