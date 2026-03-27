@@ -4,12 +4,22 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
     try {
-        const games = await prisma.games.findMany();
+        const games = await prisma.games.findMany({
+            select: {
+                game_id: true,
+                name: true,
+                description: true,
+                genre: {
+                    select: {
+                        name: true
+                    }
+                }
+            }
+        });
         return new Response(JSON.stringify(games), {
             status: 200,
             headers: { "Content-Type": "application/json" },
         });
-
     } catch (error) {
         console.error("DB ERROR:", error);
 

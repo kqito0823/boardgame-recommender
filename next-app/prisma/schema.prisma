@@ -17,13 +17,13 @@ model Games {
     is_favorite      Boolean // お気に入り
     num_of_played    Int // プレイ回数
     day_of_last_play DateTime // 最終プレイ日
-    genre_id Int
-    genre Genre @relation(fields: [genre_id], references: [id])
+    genre_id         Int
+    genre            Genre    @relation(fields: [genre_id], references: [id])
 }
 
 // ジャンルテーブル
 model Genre {
-    id Int    @id @default(autoincrement()) // ジャンルid
-    name     String // ジャンル名
+    id    Int     @id @default(autoincrement()) // ジャンルid
+    name  String // ジャンル名
     games Games[]
 }

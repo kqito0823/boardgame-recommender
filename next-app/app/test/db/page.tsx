@@ -8,7 +8,7 @@ export default function DBPage() {
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch("/api/db", {
+            const response = await fetch("/api/db/recommend_my_game", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
