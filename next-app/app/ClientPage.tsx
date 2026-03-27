@@ -71,7 +71,7 @@ export default function ClientHome({ genreData, gameData }: Props) {
                         <input
                             type="radio"
                             defaultChecked
-                            {...register("tab")}
+                            {...register("tab")} // name属性に相当
                             id="today-game"
                             value="today-game"
                             className="hidden peer"

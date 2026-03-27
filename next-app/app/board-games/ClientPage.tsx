@@ -4,26 +4,50 @@ import { useState } from "react";
 import { Star, X, Search, User, Plus } from "lucide-react";
 
 import { Game } from "@/types/game";
+import GameModal from "@/components/ui/modal";
 
 interface Props {
     data: Game[];
 }
 
-export default function BoardGamesClientPage({ data }: Props) {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [games, setGames] = useState(data);
-    console.log(games); // デバッグ
+// モーダルのState型定義
+type ModalState = {
+    isOpen: boolean;
+    mode: "create" | "edit";
+    game: Game | null;
+};
 
+export default function BoardGamesClientPage({ data }: Props) {
+    const [searchQuery, setSearchQuery] = useState(""); // 検索クエリ
+    const [games, setGames] = useState(data); // ゲーム情報
+    // モーダルの状態
+    const [modalState, setModalState] = useState<ModalState>({
+        isOpen: false,
+        mode: "create",
+        game: null,
+    });
+
+    // 検索条件適用 (フィルターされたGamesを返す)
     const filteredGames = games.filter(
-        (g) => g.name.includes(searchQuery) || g.description.includes(searchQuery),
+        (game) => game.name.includes(searchQuery) || game.description.includes(searchQuery),
     );
+
+    // 編集モーダル
+    const openEditModal = (game: Game) => {
+        setModalState({ isOpen: true, mode: "edit", game });
+    };
+
+    // 新規作成モーダル
+    const openCreateModal = () => {
+        setModalState({ isOpen: true, mode: "create", game: null });
+    };
 
     return (
         <div className="w-full max-w-5xl p-4 mx-auto space-y-6 sm:p-6">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <h2 className="text-2xl font-bold text-gray-800">保有ゲーム一覧</h2>
                 <button
-                    //   onClick={openCreateModal}
+                    onClick={openCreateModal}
                     className="bg-lime-500 text-white font-medium px-5 py-2.5 rounded-full shadow-sm shadow-lime-500/20 hover:bg-lime-600 hover:shadow transition-all flex items-center gap-2 text-sm w-full sm:w-auto justify-center">
                     <Plus size={18} /> 新規登録
                 </button>
@@ -61,7 +85,7 @@ export default function BoardGamesClientPage({ data }: Props) {
                     filteredGames.map((game: Game) => (
                         <div
                             key={game.game_id}
-                            //   onClick={() => openEditModal(game)}
+                            onClick={() => openEditModal(game)}
                             className="flex items-center justify-between p-4 transition-all bg-white border border-gray-100 cursor-pointer rounded-2xl sm:p-5 hover:shadow-md hover:border-lime-200 group">
                             <div className="flex items-center flex-1 min-w-0 gap-4 sm:gap-5">
                                 <button
@@ -115,6 +139,15 @@ export default function BoardGamesClientPage({ data }: Props) {
                     ))
                 )}
             </div>
+            {modalState.isOpen && (
+                <GameModal
+                    mode={modalState.mode}
+                    initialData={modalState.game}
+                    onClose={() => setModalState({ isOpen: false, mode: "create", game: null })}
+                    // onSave={saveGame}
+                    // onDelete={(id) => handleDelete(id, null)}
+                />
+            )}
         </div>
     );
 }
