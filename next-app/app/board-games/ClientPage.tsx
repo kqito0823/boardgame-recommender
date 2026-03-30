@@ -1,10 +1,11 @@
 "use client";
 
+import { Plus, Search, Star, User, X } from "lucide-react";
 import { useState } from "react";
-import { Star, X, Search, User, Plus } from "lucide-react";
 
-import { Game } from "@/types/game";
 import GameModal from "@/components/ui/modal";
+import { Game } from "@/types/game";
+import dayjs from "dayjs";
 
 interface Props {
     data: Game[];
@@ -42,6 +43,25 @@ export default function BoardGamesClientPage({ data }: Props) {
         setModalState({ isOpen: true, mode: "create", game: null });
     };
 
+    //「遊んだ！」の更新
+    const handlePlayed = (game_id: number) => {
+        
+        setGames((prevGames) =>
+            prevGames.map((g) =>
+                g.game_id === game_id
+                    ? { ...g, num_of_played: g.num_of_played + 1 }
+                    : g
+            )
+        );
+    };
+
+    //　日付フォーマット
+    const formattedGames = filteredGames.map(game => ({
+        ...game,
+        day_of_last_play: dayjs(game.day_of_last_play)
+            .format("YYYY/MM/DD"),
+    }));
+
     return (
         <div className="w-full max-w-5xl p-4 mx-auto space-y-6 sm:p-6">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -77,19 +97,22 @@ export default function BoardGamesClientPage({ data }: Props) {
 
             {/* ゲームリスト */}
             <div className="space-y-3">
-                {filteredGames.length === 0 ? (
+                {formattedGames.length === 0 ? (
                     <div className="py-16 text-center text-gray-400 bg-white border border-gray-100 shadow-sm rounded-2xl">
                         <p>見つかりませんでした。</p>
                     </div>
                 ) : (
-                    filteredGames.map((game: Game) => (
+                    formattedGames.map((game: Game) => (
                         <div
                             key={game.game_id}
                             onClick={() => openEditModal(game)}
                             className="flex items-center justify-between p-4 transition-all bg-white border border-gray-100 cursor-pointer rounded-2xl sm:p-5 hover:shadow-md hover:border-lime-200 group">
                             <div className="flex items-center flex-1 min-w-0 gap-4 sm:gap-5">
                                 <button
-                                    //   onClick={(e) => handlePlayed(game.id, e)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // 親のクリックを止める
+                                        handlePlayed(game.game_id);
+                                    }}
                                     className="flex items-center justify-center w-12 h-12 font-bold transition-all rounded-full sm:w-14 sm:h-14 bg-lime-50 text-lime-600 shrink-0 hover:bg-lime-100 active:scale-95"
                                     title="遊んだ！を記録">
                                     <span className="text-[10px] sm:text-xs">遊んだ!</span>
