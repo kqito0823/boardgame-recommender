@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 
 export async function PATCH(req: Request) {
-  const body = await req.json();
-  const { game_id } = body;
+  const { game_id } = await req.json();
 
   const updated = await prisma.games.update({
     where: { game_id },
