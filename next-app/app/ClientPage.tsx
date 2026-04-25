@@ -3,6 +3,7 @@
 import { Game, Genre } from "@/types/game";
 import { RecommendInputs } from "@/types/input";
 import { OutputBoardgame } from "@/types/output";
+import Image from "next/image";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -27,8 +28,17 @@ export default function ClientHome({ genreData, gameData }: Props) {
         setIsGenerating(true);
         // inputDataにgameDB情報を追加
         inputData.gameData = gameData;
+
+        // 実行モード指定 (エンドポイントに挿入する文字列に変換)
+        const mode: string = (() => {
+            if (inputData.tab === "today-game") return "today";
+            if (inputData.tab === "new-game") return "new";
+            return "today-game"; // デフォルト値
+        })();
+
         try {
-            const response = await fetch("/api/chat/recommend_game", {
+            // 動的にAPIを切り替える
+            const response = await fetch(`/api/chat/recommend_${mode}_game`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -177,36 +187,53 @@ export default function ClientHome({ genreData, gameData }: Props) {
                 </div>
             </form>
 
-            {/* 生成結果表示 */}
-            {outputText.length > 0 && !isGenerating && (
-                <div className="w-full max-w-3xl mt-16 duration-500 animate-in fade-in slide-in-from-bottom-4">
-                    <div className="p-6 bg-white border border-gray-100 shadow-xl sm:p-8 rounded-3xl">
-                        <h2 className="flex items-center justify-center gap-2 mb-8 text-2xl font-bold text-center text-gray-800">
-                            <span className="w-8 h-1 rounded-full bg-lime-500"></span>
-                            おすすめのボードゲーム
-                            <span className="w-8 h-1 rounded-full bg-lime-500"></span>
-                        </h2>
+            {/* 生成結果表示 | 将来的に出し分ける */}
+            {outputText.map((output, k) => (
+                <div
+                    key={k}
+                    className="flex flex-col w-full p-6 mt-2 transition-all duration-300 border-l-4 shadow-sm bg-gray-50 border-lime-500 rounded-2xl hover:shadow-md hover:bg-white">
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                        {/* 画像がある場合は表示（楽天APIからのデータ用） */}
+                        {output.imageUrl && (
+                            <div className="shrink-0">
+                                <img
+                                    src={output.imageUrl}
+                                    alt={output.name}
+                                    className="object-cover w-24 h-24 border border-gray-200 rounded-lg"
+                                />
+                            </div>
+                        )}
 
-                        <div className="space-y-5">
-                            {outputText.map((output, k) => (
-                                <div
-                                    key={k}
-                                    className="flex flex-col w-full p-6 mt-2 transition-all duration-300 border-l-4 shadow-sm bg-gray-50 border-lime-500 rounded-2xl hover:shadow-md hover:bg-white">
-                                    {/* DBにないゲームが提案された場合は name が無いので条件付き表示 */}
-                                    {output.name && (
-                                        <h3 className="mb-3 text-lg font-bold text-gray-800">
-                                            {output.name}
-                                        </h3>
-                                    )}
-                                    <p className="text-base leading-relaxed text-gray-700">
-                                        {output.reason}
-                                    </p>
+                        <div className="flex-1">
+                            {output.name && (
+                                <h3 className="mb-2 text-lg font-bold text-gray-800 line-clamp-2">
+                                    {output.name}
+                                </h3>
+                            )}
+                            <p className="text-base leading-relaxed text-gray-700">
+                                {output.reason}
+                            </p>
+
+                            {/* 楽天の商品情報がある場合のリッチUI */}
+                            {output.itemUrl && (
+                                <div className="flex items-center gap-3 mt-4">
+                                    <span className="font-bold text-red-600">
+                                        {output.price?.toLocaleString()}円
+                                    </span>
+                                    <span className="text-xs text-gray-500">{output.shopName}</span>
+                                    <a
+                                        href={output.itemUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-auto text-sm font-medium text-white bg-red-500 px-4 py-1.5 rounded-full hover:bg-red-600 transition-colors">
+                                        楽天市場で見る
+                                    </a>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+            ))}
         </div>
     );
 }

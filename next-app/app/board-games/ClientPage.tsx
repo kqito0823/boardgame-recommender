@@ -1,10 +1,13 @@
 "use client";
 
+import { Plus, Search, Star, User, X } from "lucide-react";
 import { useState } from "react";
-import { Star, X, Search, User, Plus } from "lucide-react";
 
-import { Game } from "@/types/game";
 import GameModal from "@/components/ui/modal";
+import { Game } from "@/types/game";
+import dayjs from "dayjs";
+
+const url = process.env.NEXT_PUBLIC_API_URL!;
 
 interface Props {
     data: Game[];
@@ -42,6 +45,69 @@ export default function BoardGamesClientPage({ data }: Props) {
         setModalState({ isOpen: true, mode: "create", game: null });
     };
 
+    //「遊んだ！」の更新
+    const handlePlayed = async (game_id: number) => {
+        await fetch(`${url}/api/db/update_num_of_played`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ game_id }),
+        });
+        const now = new Date();
+        setGames((prevGames) =>
+            prevGames.map((g) =>
+                g.game_id === game_id
+                    ? {
+                        ...g,
+                        num_of_played: g.num_of_played + 1,
+                        day_of_last_play: now.toISOString(),
+                    }
+                    : g,
+            ),
+        );
+    };
+
+    // お気に入りのトグル
+    const toggleFavorite = async (game_id: number) => {
+        const game = games.find((g) => g.game_id === game_id);
+        if (!game) return;
+
+        const newValue = !game.is_favorite;
+        await fetch(`${url}/api/db/update_is_favorite`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ game_id, is_favorite: newValue }),
+        });
+
+        setGames((prevGames) =>
+            prevGames.map((g) => (g.game_id === game_id ? { ...g, is_favorite: newValue } : g)),
+        );
+    };
+
+    //削除
+    const handleDelete = async (game_id: number) => {
+        const confirm = window.confirm("本当に削除しますか？");
+        if (!confirm) return;
+        await fetch(`${url}/api/db/delete_game_table`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ game_id }),
+        });
+        const newGames = games.filter((game) => game.game_id !== game_id);
+        setGames(newGames);
+    };
+
+    //　日付フォーマット
+    const formattedGames = filteredGames.map((game) => ({
+        ...game,
+        day_of_last_play: dayjs(game.day_of_last_play).format("YYYY/MM/DD"),
+    }));
+
     return (
         <div className="w-full max-w-5xl p-4 mx-auto space-y-6 sm:p-6">
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -77,19 +143,22 @@ export default function BoardGamesClientPage({ data }: Props) {
 
             {/* ゲームリスト */}
             <div className="space-y-3">
-                {filteredGames.length === 0 ? (
+                {formattedGames.length === 0 ? (
                     <div className="py-16 text-center text-gray-400 bg-white border border-gray-100 shadow-sm rounded-2xl">
                         <p>見つかりませんでした。</p>
                     </div>
                 ) : (
-                    filteredGames.map((game: Game) => (
+                    formattedGames.map((game: Game) => (
                         <div
                             key={game.game_id}
                             onClick={() => openEditModal(game)}
                             className="flex items-center justify-between p-4 transition-all bg-white border border-gray-100 cursor-pointer rounded-2xl sm:p-5 hover:shadow-md hover:border-lime-200 group">
                             <div className="flex items-center flex-1 min-w-0 gap-4 sm:gap-5">
                                 <button
-                                    //   onClick={(e) => handlePlayed(game.id, e)}
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // 親のクリックを止める
+                                        handlePlayed(game.game_id);
+                                    }}
                                     className="flex items-center justify-center w-12 h-12 font-bold transition-all rounded-full sm:w-14 sm:h-14 bg-lime-50 text-lime-600 shrink-0 hover:bg-lime-100 active:scale-95"
                                     title="遊んだ！を記録">
                                     <span className="text-[10px] sm:text-xs">遊んだ!</span>
@@ -114,7 +183,10 @@ export default function BoardGamesClientPage({ data }: Props) {
                             <div className="flex flex-col items-end gap-3 ml-4 shrink-0">
                                 <div className="flex items-center gap-1 transition-opacity opacity-100 sm:gap-2 sm:opacity-0 sm:group-hover:opacity-100">
                                     <button
-                                        // onClick={(e) => toggleFavorite(game.id, e)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // 親のクリックを止める
+                                            toggleFavorite(game.game_id);
+                                        }}
                                         className="p-2 transition-colors rounded-full hover:bg-gray-50">
                                         <Star
                                             size={20}
@@ -126,7 +198,10 @@ export default function BoardGamesClientPage({ data }: Props) {
                                         />
                                     </button>
                                     <button
-                                        // onClick={(e) => handleDelete(game.id, e)}
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // 親のクリックを止める
+                                            handleDelete(game.game_id);
+                                        }}
                                         className="p-2 text-gray-400 transition-colors rounded-full hover:text-red-500 hover:bg-red-50">
                                         <X size={18} />
                                     </button>
@@ -145,7 +220,7 @@ export default function BoardGamesClientPage({ data }: Props) {
                     initialData={modalState.game}
                     onClose={() => setModalState({ isOpen: false, mode: "create", game: null })}
                     // onSave={saveGame}
-                    // onDelete={(id) => handleDelete(id, null)}
+                    onDelete={(id) => handleDelete(id)}
                 />
             )}
         </div>
